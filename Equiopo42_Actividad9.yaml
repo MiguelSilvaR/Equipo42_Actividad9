@@ -139,3 +139,154 @@ paths:
           description: Datos inválidos
         "404":
           description: Usuario no encontrado
+  /meetings:
+    get:
+      tags: [Reuniones]
+      summary: Listar reuniones
+      description: Lista reuniones filtrando por rango de tiempo o por organizador.
+      parameters:
+        - in: query
+          name: from
+          required: false
+          schema:
+            type: string
+            format: date-time
+          description: Incluir reuniones que inician a partir de esta marca de tiempo (ISO8601).
+        - in: query
+          name: to
+          required: false
+          schema:
+            type: string
+            format: date-time
+          description: Incluir reuniones que terminan antes de esta marca de tiempo (ISO8601).
+        - in: query
+          name: organizerId
+          required: false
+          schema:
+            type: string
+          description: Filtrar por el ID del organizador.
+      responses:
+        "200":
+          description: Lista de reuniones
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Meeting"
+        "400":
+          description: Parámetros inválidos
+    post:
+      tags: [Reuniones]
+      summary: Crear reunión
+      description: Crea una reunión propuesta por el asistente.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Meeting"
+      responses:
+        "201":
+          description: Reunión creada (tentative/scheduled)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Meeting"
+        "400":
+          description: Datos inválidos
+
+  /meetings/{meetingId}:
+    get:
+      tags: [Reuniones]
+      summary: Obtener detalles de una reunión
+      parameters:
+        - in: path
+          name: meetingId
+          required: true
+          schema:
+            type: string
+          description: ID interno de la reunión.
+      responses:
+        "200":
+          description: Reunión encontrada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Meeting"
+        "404":
+          description: Reunión no encontrada
+    patch:
+      tags: [Reuniones]
+      summary: Actualizar reunión
+      description: Reprogramar la hora, actualizar el título, etc.
+      parameters:
+        - in: path
+          name: meetingId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Meeting"
+      responses:
+        "200":
+          description: Reunión actualizada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Meeting"
+        "400":
+          description: Datos inválidos
+        "404":
+          description: Reunión no encontrada
+    delete:
+      tags: [Reuniones]
+      summary: Cancelar reunión
+      parameters:
+        - in: path
+          name: meetingId
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Reunión cancelada/eliminada
+        "404":
+          description: Reunión no encontrada
+
+  /meetings/{meetingId}/summary:
+    post:
+      tags: [Reuniones]
+      summary: Guardar resumen de la reunión
+      description: Sube/actualiza el resumen (notas, acuerdos, decisiones tomadas).
+      parameters:
+        - in: path
+          name: meetingId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                summaryText:
+                  type: string
+                  description: Resumen generado por el asistente o por el usuario.
+              required:
+                - summaryText
+      responses:
+        "200":
+          description: Resumen guardado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Meeting"
+        "404":
+          description: Reunión no encontrada
