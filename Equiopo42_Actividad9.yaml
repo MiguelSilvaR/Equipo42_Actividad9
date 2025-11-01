@@ -36,3 +36,106 @@ externalDocs:
 security:
   - ApiKeyAuth: []
   - BearerAuth: []
+paths:
+
+  /health:
+    get:
+      tags:
+        - Sistema
+      summary: Verificar estado del servicio
+      description: Retorna 200 si el servicio está activo.
+      responses:
+        "200":
+          description: OK
+        "503":
+          description: Servicio no disponible
+
+  /users:
+    get:
+      tags: [Usuarios]
+      summary: Listar usuarios conocidos
+      description: Devuelve todos los usuarios registrados en el SMA.
+      parameters:
+        - in: query
+          name: email
+          schema:
+            type: string
+          description: Filtrar por email exacto.
+      responses:
+        "200":
+          description: Lista de usuarios
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+        "400":
+          description: Parámetros inválidos
+    post:
+      tags: [Usuarios]
+      summary: Crear usuario
+      description: Registra un nuevo usuario/participante en el sistema.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:
+        "201":
+          description: Usuario creado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Datos incompletos o inválidos
+
+  /users/{userId}:
+    get:
+      tags: [Usuarios]
+      summary: Obtener detalle de usuario
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+          description: ID interno del usuario en SMA.
+      responses:
+        "200":
+          description: Usuario encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          description: Usuario no encontrado
+    patch:
+      tags: [Usuarios]
+      summary: Actualizar usuario
+      description: Actualiza datos como zona horaria o correo alterno.
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:
+        "200":
+          description: Usuario actualizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Datos inválidos
+        "404":
+          description: Usuario no encontrado
