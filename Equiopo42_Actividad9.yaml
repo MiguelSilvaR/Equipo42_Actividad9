@@ -14,18 +14,47 @@ info:
       José Montante - A01150895
       Hector Jorge Morales Arch - A01796487
       Carlos Del Castillo Rey - A01796595
-    
 
 servers:
   - url: https://firestore.googleapis.com/v1/projects/smart-meeting-assistant-1a3c8/databases/(default)/documents/
     description: Entorno principal (simulado)
 
+tags:
+  - name: Usuarios
+    description: Operaciones relacionadas con usuarios registrados
+  - name: Reuniones
+    description: Gestión de reuniones y tareas
+  - name: Disponibilidad
+    description: Sugerencias de horarios comunes
+  - name: Sistema
+    description: Estado del servicio
+
+externalDocs:
+  description: Documentación técnica del proyecto
+  url: https://github.com/equipo42/sma-docs
+
+security:
+  - ApiKeyAuth: []
+  - BearerAuth: []
+
 paths:
+
+  /health:
+    get:
+      tags:
+        - Sistema
+      summary: Verificar estado del servicio
+      description: Retorna 200 si el servicio está activo.
+      responses:
+        "200":
+          description: OK
+        "503":
+          description: Servicio no disponible
 
   /users:
     get:
+      tags: [Usuarios]
       summary: Listar usuarios conocidos
-      description: Devuelve todos los usuarios registrados en el SMA.
       parameters:
         - in: query
           name: email
@@ -44,8 +73,8 @@ paths:
         "400":
           description: Parámetros inválidos
     post:
+      tags: [Usuarios]
       summary: Crear usuario
-      description: Registra un nuevo usuario/participante en el sistema.
       requestBody:
         required: true
         content:
@@ -64,6 +93,7 @@ paths:
 
   /users/{userId}:
     get:
+      tags: [Usuarios]
       summary: Obtener detalle de usuario
       parameters:
         - in: path
@@ -71,7 +101,6 @@ paths:
           required: true
           schema:
             type: string
-          description: ID interno del usuario en SMA.
       responses:
         "200":
           description: Usuario encontrado
@@ -82,8 +111,8 @@ paths:
         "404":
           description: Usuario no encontrado
     patch:
+      tags: [Usuarios]
       summary: Actualizar usuario
-      description: Actualiza datos como zona horaria o correo alterno.
       parameters:
         - in: path
           name: userId
@@ -110,29 +139,23 @@ paths:
 
   /meetings:
     get:
+      tags: [Reuniones]
       summary: Listar reuniones
-      description: Lista reuniones filtrando por rango de tiempo o por organizador.
       parameters:
         - in: query
           name: from
-          required: false
           schema:
             type: string
             format: date-time
-          description: Incluir reuniones que inician a partir de esta marca de tiempo (ISO8601).
         - in: query
           name: to
-          required: false
           schema:
             type: string
             format: date-time
-          description: Incluir reuniones que terminan antes de esta marca de tiempo (ISO8601).
         - in: query
           name: organizerId
-          required: false
           schema:
             type: string
-          description: Filtrar por el ID del organizador.
       responses:
         "200":
           description: Lista de reuniones
@@ -145,8 +168,8 @@ paths:
         "400":
           description: Parámetros inválidos
     post:
+      tags: [Reuniones]
       summary: Crear reunión
-      description: Crea una reunión propuesta por el asistente.
       requestBody:
         required: true
         content:
@@ -155,7 +178,7 @@ paths:
               $ref: "#/components/schemas/Meeting"
       responses:
         "201":
-          description: Reunión creada (tentative/scheduled)
+          description: Reunión creada
           content:
             application/json:
               schema:
@@ -165,6 +188,7 @@ paths:
 
   /meetings/{meetingId}:
     get:
+      tags: [Reuniones]
       summary: Obtener detalles de una reunión
       parameters:
         - in: path
@@ -172,7 +196,6 @@ paths:
           required: true
           schema:
             type: string
-          description: ID interno de la reunión.
       responses:
         "200":
           description: Reunión encontrada
@@ -183,8 +206,8 @@ paths:
         "404":
           description: Reunión no encontrada
     patch:
+      tags: [Reuniones]
       summary: Actualizar reunión
-      description: Reprogramar la hora, actualizar el título, etc.
       parameters:
         - in: path
           name: meetingId
@@ -209,6 +232,7 @@ paths:
         "404":
           description: Reunión no encontrada
     delete:
+      tags: [Reuniones]
       summary: Cancelar reunión
       parameters:
         - in: path
@@ -218,14 +242,14 @@ paths:
             type: string
       responses:
         "204":
-          description: Reunión cancelada/eliminada
+          description: Reunión cancelada
         "404":
           description: Reunión no encontrada
 
   /meetings/{meetingId}/summary:
     post:
+      tags: [Reuniones]
       summary: Guardar resumen de la reunión
-      description: Sube/actualiza el resumen (notas, acuerdos, decisiones tomadas).
       parameters:
         - in: path
           name: meetingId
@@ -241,7 +265,6 @@ paths:
               properties:
                 summaryText:
                   type: string
-                  description: Resumen generado por el asistente o por el usuario.
               required:
                 - summaryText
       responses:
@@ -256,6 +279,7 @@ paths:
 
   /meetings/{meetingId}/action-items:
     get:
+      tags: [Reuniones]
       summary: Listar action items de una reunión
       parameters:
         - in: path
@@ -275,8 +299,8 @@ paths:
         "404":
           description: Reunión no encontrada
     post:
+      tags: [Reuniones]
       summary: Crear action item en una reunión
-      description: Crea una tarea de seguimiento asignable a un participante.
       parameters:
         - in: path
           name: meetingId
@@ -303,8 +327,8 @@ paths:
 
   /availability/suggest:
     post:
+      tags: [Disponibilidad]
       summary: Proponer horarios disponibles
-      description: Calcula bloques de tiempo recomendados en común entre varias personas.
       requestBody:
         required: true
         content:
@@ -321,153 +345,28 @@ paths:
                 items:
                   $ref: "#/components/schemas/AvailabilitySuggestion"
         "400":
-          description: Datos inválidos (por ejemplo, sin participantes)
+          description: Datos inválidos
 
 components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
   schemas:
 
     User:
       type: object
-      description: Representa a un participante/usuario conocido por el SMA.
       properties:
         id:
           type: string
           format: uuid
-          description: Identificador interno del usuario.
+          example: "123e4567-e89b-12d3-a456-426614174000"
         displayName:
           type: string
-          description: Nombre legible (por ejemplo, "Karla López").
-        email:
-          type: string
-          format: email
-        timezone:
-          type: string
-          description: Zona horaria IANA, ej. "America/Los_Angeles".
-        role:
-          type: string
-          description: Rol del usuario respecto a una reunión (Organizer, RequiredAttendee, OptionalAttendee).
-      required:
-        - id
-        - displayName
-        - email
-
-    Meeting:
-      type: object
-      description: Reunión gestionada/creada por el Smart Meeting Assistant.
-      properties:
-        id:
-          type: string
-          format: uuid
-        title:
-          type: string
-          description: Título o propósito breve de la reunión.
-        startTime:
-          type: string
-          format: date-time
-          description: Hora de inicio propuesta/confirmada.
-        endTime:
-          type: string
-          format: date-time
-        status:
-          type: string
-          enum: [tentative, scheduled, cancelled]
-          description: Estado actual de la reunión.
-        location:
-          type: string
-          description: Ubicación física o virtual (Teams, Zoom, Sala 2-B).
-        participants:
-          type: array
-          description: Lista de asistentes.
-          items:
-            $ref: "#/components/schemas/User"
-        agenda:
-          type: array
-          description: Temas planeados.
-          items:
-            type: string
-        summary:
-          type: string
-          description: Resumen/acta de acuerdos.
-        Tasks:
-          type: array
-          description: Tareas derivadas de la reunión.
-          items:
-            $ref: "#/components/schemas/Task"
-      required:
-        - id
-        - title
-        - startTime
-        - endTime
-        - participants
-
-    Task:
-      type: object
-      description: Tarea derivada de una reunión.
-      properties:
-        id:
-          type: string
-          format: uuid
-        description:
-          type: string
-          description: Acción a realizar.
-        ownerUserId:
-          type: string
-          description: ID del usuario responsable.
-        dueDate:
-          type: string
-          format: date
-          description: Fecha límite propuesta.
-        status:
-          type: string
-          enum: [open, done]
-      required:
-        - id
-        - description
-        - ownerUserId
-        - status
-
-    AvailabilityRequest:
-      type: object
-      description: Parámetros para buscar horarios comunes.
-      properties:
-        participantIds:
-          type: array
-          items:
-            type: string
-          description: IDs de usuarios que deben estar disponibles.
-        durationMinutes:
-          type: integer
-          example: 30
-          description: Duración deseada del bloque.
-        earliestStart:
-          type: string
-          format: date-time
-          description: No proponer horarios antes de esta fecha/hora.
-        latestEnd:
-          type: string
-          format: date-time
-          description: No proponer horarios después de esta fecha/hora.
-      required:
-        - participantIds
-        - durationMinutes
-        - earliestStart
-        - latestEnd
-
-    AvailabilitySuggestion:
-      type: object
-      description: Slot recomendado por el motor de disponibilidad.
-      properties:
-        slotStart:
-          type: string
-          format: date-time
-        slotEnd:
-          type: string
-          format: date-time
-        score:
-          type: number
-          format: float
-          description: Qué tan bueno es el slot (1.0 = ideal).
-      required:
-        - slotStart
-        - slotEnd
-        - score
+          example: "Karla López"
