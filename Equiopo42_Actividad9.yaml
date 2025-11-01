@@ -557,3 +557,54 @@ components:
               error:
                 type: string
                 example: "Internal Server Error. Please try again later."
+
+  parameters:
+    UserIdParam:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: ID interno del usuario en el SMA.
+
+    MeetingIdParam:
+      name: meetingId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: ID interno de la reunión.
+
+    EmailQueryParam:
+      name: email
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Filtrar usuarios por email exacto.
+
+    OrganizerIdQueryParam:
+      name: organizerId
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Filtrar reuniones por ID del organizador.
+
+    FromQueryParam:
+      name: from
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date-time
+      description: Incluir reuniones que inician a partir de esta marca de tiempo.
+
+    ToQueryParam:
+      name: to
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date-time
+      description: Incluir reuniones que terminan antes de esta marca de tiempo.
