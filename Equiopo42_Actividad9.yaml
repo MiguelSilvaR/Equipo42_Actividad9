@@ -290,3 +290,74 @@ paths:
                 $ref: "#/components/schemas/Meeting"
         "404":
           description: Reunión no encontrada
+  /meetings/{meetingId}/action-items:
+    get:
+      tags: [Reuniones]
+      summary: Listar action items de una reunión
+      parameters:
+        - in: path
+          name: meetingId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Lista de action items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Task"
+        "404":
+          description: Reunión no encontrada
+    post:
+      tags: [Reuniones]
+      summary: Crear action item en una reunión
+      description: Crea una tarea de seguimiento asignable a un participante.
+      parameters:
+        - in: path
+          name: meetingId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Task"
+      responses:
+        "201":
+          description: Action item creado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+        "400":
+          description: Datos inválidos
+        "404":
+          description: Reunión no encontrada
+
+  /availability/suggest:
+    post:
+      tags: [Disponibilidad]
+      summary: Proponer horarios disponibles
+      description: Calcula bloques de tiempo recomendados en común entre varias personas.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AvailabilityRequest"
+      responses:
+        "200":
+          description: Slots sugeridos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AvailabilitySuggestion"
+        "400":
+          description: Datos inválidos (por ejemplo, sin participantes)
