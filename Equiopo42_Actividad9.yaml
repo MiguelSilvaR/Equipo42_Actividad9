@@ -361,3 +361,166 @@ paths:
                   $ref: "#/components/schemas/AvailabilitySuggestion"
         "400":
           description: Datos inválidos (por ejemplo, sin participantes)
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+
+    User:
+      type: object
+      description: Representa a un participante/usuario conocido por el SMA.
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Identificador interno del usuario.
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        displayName:
+          type: string
+          description: Nombre legible (por ejemplo, "Karla López").
+          example: "Karla López"
+        email:
+          type: string
+          format: email
+          example: "karla.lopez@example.com"
+        timezone:
+          type: string
+          description: Zona horaria IANA, ej. "America/Los_Angeles".
+          example: "America/Mexico_City"
+        role:
+          type: string
+          description: Rol del usuario respecto a una reunión (Organizer, RequiredAttendee, OptionalAttendee).
+          example: "Organizer"
+      required:
+        - id
+        - displayName
+        - email
+
+    Meeting:
+      type: object
+      description: Reunión gestionada/creada por el Smart Meeting Assistant.
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          description: Título o propósito breve de la reunión.
+        startTime:
+          type: string
+          format: date-time
+          description: Hora de inicio propuesta/confirmada.
+        endTime:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [tentative, scheduled, cancelled]
+          description: Estado actual de la reunión.
+        location:
+          type: string
+          description: Ubicación física o virtual (Teams, Zoom, Sala 2-B).
+        participants:
+          type: array
+          description: Lista de asistentes.
+          items:
+            $ref: "#/components/schemas/User"
+        agenda:
+          type: array
+          description: Temas planeados.
+          items:
+            type: string
+        summary:
+          type: string
+          description: Resumen/acta de acuerdos.
+        Tasks:
+          type: array
+          description: Tareas derivadas de la reunión.
+          items:
+            $ref: "#/components/schemas/Task"
+      required:
+        - id
+        - title
+        - startTime
+        - endTime
+        - participants
+
+    Task:
+      type: object
+      description: Tarea derivada de una reunión.
+      properties:
+        id:
+          type: string
+          format: uuid
+        description:
+          type: string
+          description: Acción a realizar.
+        ownerUserId:
+          type: string
+          description: ID del usuario responsable.
+        dueDate:
+          type: string
+          format: date
+          description: Fecha límite propuesta.
+        status:
+          type: string
+          enum: [open, done]
+      required:
+        - id
+        - description
+        - ownerUserId
+        - status
+
+    AvailabilityRequest:
+      type: object
+      description: Parámetros para buscar horarios comunes.
+      properties:
+        participantIds:
+          type: array
+          items:
+            type: string
+          description: IDs de usuarios que deben estar disponibles.
+        durationMinutes:
+          type: integer
+          example: 30
+          description: Duración deseada del bloque.
+        earliestStart:
+          type: string
+          format: date-time
+          description: No proponer horarios antes de esta fecha/hora.
+        latestEnd:
+          type: string
+          format: date-time
+          description: No proponer horarios después de esta fecha/hora.
+      required:
+        - participantIds
+        - durationMinutes
+        - earliestStart
+        - latestEnd
+
+    AvailabilitySuggestion:
+      type: object
+      description: Slot recomendado por el motor de disponibilidad.
+      properties:
+        slotStart:
+          type: string
+          format: date-time
+        slotEnd:
+          type: string
+          format: date-time
+        score:
+          type: number
+          format: float
+          description: Qué tan bueno es el slot (1.0 = ideal).
+      required:
+        - slotStart
+        - slotEnd
+        - score
