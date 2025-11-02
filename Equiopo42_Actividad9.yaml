@@ -2,7 +2,7 @@ openapi: 3.0.3
 
 info:
   title: Smart Meeting Assistant API
-  version: "1.0.0"
+  version: "1.0.3"
   description: >
     API del Smart Meeting Assistant (SMA). Permite registrar usuarios, proponer
     reuniones, administrar participantes, almacenar resúmenes y generar tareas
@@ -72,6 +72,8 @@ paths:
                   $ref: "#/components/schemas/User"
         "400":
           description: Parámetros inválidos
+        "429":
+          description: Límite de solicitudes excedido
     post:
       tags: [Usuarios]
       summary: Crear usuario
@@ -91,6 +93,8 @@ paths:
                 $ref: "#/components/schemas/User"
         "400":
           description: Datos incompletos o inválidos
+        "429":
+          description: Límite de solicitudes excedido
 
   /users/{userId}:
     get:
@@ -112,6 +116,8 @@ paths:
                 $ref: "#/components/schemas/User"
         "404":
           description: Usuario no encontrado
+        "429":
+          description: Límite de solicitudes excedido
     patch:
       tags: [Usuarios]
       summary: Actualizar usuario
@@ -139,6 +145,9 @@ paths:
           description: Datos inválidos
         "404":
           description: Usuario no encontrado
+        "429":
+          description: Límite de solicitudes excedido
+
   /meetings:
     get:
       tags: [Reuniones]
@@ -176,6 +185,8 @@ paths:
                   $ref: "#/components/schemas/Meeting"
         "400":
           description: Parámetros inválidos
+        "429":
+          description: Límite de solicitudes excedido
     post:
       tags: [Reuniones]
       summary: Crear reunión
@@ -195,6 +206,10 @@ paths:
                 $ref: "#/components/schemas/Meeting"
         "400":
           description: Datos inválidos
+        "409":
+          description: Conflicto de agenda (solapamiento con otra reunión confirmada)
+        "429":
+          description: Límite de solicitudes excedido
 
   /meetings/{meetingId}:
     get:
@@ -216,6 +231,8 @@ paths:
                 $ref: "#/components/schemas/Meeting"
         "404":
           description: Reunión no encontrada
+        "429":
+          description: Límite de solicitudes excedido
     patch:
       tags: [Reuniones]
       summary: Actualizar reunión
@@ -243,6 +260,10 @@ paths:
           description: Datos inválidos
         "404":
           description: Reunión no encontrada
+        "409":
+          description: Conflicto de agenda al reprogramar (solapamiento)
+        "429":
+          description: Límite de solicitudes excedido
     delete:
       tags: [Reuniones]
       summary: Cancelar reunión
@@ -257,6 +278,8 @@ paths:
           description: Reunión cancelada/eliminada
         "404":
           description: Reunión no encontrada
+        "429":
+          description: Límite de solicitudes excedido
 
   /meetings/{meetingId}/summary:
     post:
@@ -290,6 +313,9 @@ paths:
                 $ref: "#/components/schemas/Meeting"
         "404":
           description: Reunión no encontrada
+        "429":
+          description: Límite de solicitudes excedido
+
   /meetings/{meetingId}/action-items:
     get:
       tags: [Reuniones]
@@ -311,6 +337,8 @@ paths:
                   $ref: "#/components/schemas/Task"
         "404":
           description: Reunión no encontrada
+        "429":
+          description: Límite de solicitudes excedido
     post:
       tags: [Reuniones]
       summary: Crear action item en una reunión
@@ -338,6 +366,8 @@ paths:
           description: Datos inválidos
         "404":
           description: Reunión no encontrada
+        "429":
+          description: Límite de solicitudes excedido
 
   /availability/suggest:
     post:
@@ -361,6 +391,9 @@ paths:
                   $ref: "#/components/schemas/AvailabilitySuggestion"
         "400":
           description: Datos inválidos (por ejemplo, sin participantes)
+        "429":
+          description: Límite de solicitudes excedido
+
 components:
   securitySchemes:
     ApiKeyAuth:
@@ -524,6 +557,7 @@ components:
         - slotStart
         - slotEnd
         - score
+
   responses:
     UnauthorizedError:
       description: No autorizado. Token inválido o ausente.
