@@ -147,6 +147,24 @@ paths:
           description: Usuario no encontrado
         "429":
           description: Límite de solicitudes excedido
+    delete:
+      tags: [Usuarios]
+      summary: Eliminar usuario
+      description: Elimina un usuario del sistema.
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+          description: ID interno del usuario en SMA.
+      responses:
+        "204":
+          description: Usuario eliminado
+        "404":
+          description: Usuario no encontrado
+        "429":
+          description: Límite de solicitudes excedido
 
   /meetings:
     get:
